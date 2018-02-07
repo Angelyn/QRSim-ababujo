@@ -183,27 +183,37 @@ classdef TaskForceA<Task
             
            % ob = obj.simState.platforms{i}.ObDetect();
            for i = 1: N
-                u = obj.simState.platforms{i}.getX(7);
-                v = obj.simState.platforms{i}.getX(8);
-                z = obj.simState.platforms{i}.getX(9);
-                                    
-                    if (ismember(i,Cen(:)) || ismember(i,U1))
-                        z = 1.5+z ;
-                    else
-                        z = -1.5+z ;
-                    end
+                ob = obj.simState.platforms{i}.PlumeDetect(); 
+                ui = obj.simState.platforms{i}.getX(7);
+                vi = obj.simState.platforms{i}.getX(8);
+                zi = obj.simState.platforms{i}.getX(9);
+                
+                if(obj.p{i}==1)
+                    UU(:,i) = obj.PIDs{i}.computeU(obj.simState.platforms{i}.getX(),[0;0;0],0);
+                    for j = 1:N
+                        u = obj.simState.platforms{j}.getX(7);
+                        v = obj.simState.platforms{j}.getX(8);
+                        z = obj.simState.platforms{j}.getX(9);
+                        if ((ismember(j,Cen(:)) || ismember(j,U1))&& (i~=j))
+                            z = 1.5+z ;
+                        else
+                            z = -1.5+z ;
+                        end
                     
-                    % If the UAV that deteted the plume is on the
-                    % vertical center line - 
-                    % and the UAV j is to the left, it has to start moving
-                    % to the right & if UAV j is to the right, it has to start moving to the left 
-                    if (ismember(i,Cen2(:)) || ismember(i,L1))
-                        v = -1.5+v;
-                    else
-                        v = 1.5 +v;
+                        % If the UAV that deteted the plume is on the
+                        % vertical center line - and the UAV j is to the left, it has to start moving
+                        % to the right & if UAV j is to the right, it has to start moving to the left 
+                        if ((ismember(j,Cen2(:)) || ismember(j,L1)) && (i~=j) )
+                            v = -1.5+v;
+                        else
+                            v = 1.5 +v;
+                        end
+                        u = u+ 2;
+                        UU(:,j) = obj.PIDs{j}.computeU(obj.simState.platforms{j}.getX(),[u;v;z],0);
                     end
-                    u = u+ 2;
-                    UU(:,i) = obj.PIDs{i}.computeU(obj.simState.platforms{i}.getX(),[u;v;z],0);
+                else
+                    UU(:,i) = obj.PIDs{i}.computeU(obj.simState.platforms{i}.getX(),U(:,i),0);
+                end
            end
         end
 
