@@ -190,25 +190,40 @@ classdef TaskForceA<Task
                 
                 if(obj.p{i}==1)
                     UU(:,i) = obj.PIDs{i}.computeU(obj.simState.platforms{i}.getX(),[0;0;0],0);
+                    
                     for j = 1:N
+                       
                         u = obj.simState.platforms{j}.getX(7);
                         v = obj.simState.platforms{j}.getX(8);
                         z = obj.simState.platforms{j}.getX(9);
-                        if ((ismember(j,Cen(:)) || ismember(j,U1))&& (i~=j))
-                            z = 1.5+z ;
-                        else
-                            z = -1.5+z ;
-                        end
+                        if(i~=j)
+                            if ((ismember(j,Cen(:)) || ismember(j,U1)))
+                                z = 1.5+z ;
+                            else
+                                if (ismember(j,D1))
+                                    z = -1.5+z ;
+                                end
+                            end
                     
-                        % If the UAV that deteted the plume is on the
-                        % vertical center line - and the UAV j is to the left, it has to start moving
-                        % to the right & if UAV j is to the right, it has to start moving to the left 
-                        if ((ismember(j,Cen2(:)) || ismember(j,L1)) && (i~=j) )
-                            v = -1.5+v;
-                        else
-                            v = 1.5 +v;
+                            % If the UAV that deteted the plume is on the
+                            % vertical center line - and the UAV j is to the left, it has to start moving
+                            % to the right & if UAV j is to the right, it has to start moving to the left 
+                            if ((ismember(j,Cen2(:)) || ismember(j,L1))  )
+                                v = -1.5+v;
+                            else
+                                if (ismember(j,R1))
+                                    v = 1.5 +v;
+                                end
+                            end
+                            u = u+2;
+                            
+                            
                         end
-                        u = u+ 2;
+                        if (obj.p{j}==1)
+                            u = 0;
+                            v = 0;
+                            z = 0;
+                        end
                         UU(:,j) = obj.PIDs{j}.computeU(obj.simState.platforms{j}.getX(),[u;v;z],0);
                     end
                 else
